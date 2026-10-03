@@ -1,0 +1,8 @@
+INSERT INTO QUIZ_CHATS (
+  USER_ID,
+  NAME
+)
+VALUES (
+  ?,
+  ?
+);

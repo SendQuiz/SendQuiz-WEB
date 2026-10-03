@@ -1,0 +1,23 @@
+{
+	admin off
+	auto_https disable_redirects
+	servers {
+		protocols h1 h2
+	}
+}
+
+https://dev.sendquiz.net {
+	tls .cache/dev-certs/dev.sendquiz.net.pem .cache/dev-certs/dev.sendquiz.net-key.pem
+	header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+
+	handle /robots.txt {
+		header Content-Type "text/plain; charset=utf-8"
+		respond `User-agent: *
+Disallow: /
+` 200
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:3006
+	}
+}
