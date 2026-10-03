@@ -31,4 +31,3 @@ networks:
     external: true
   database:
     external: true
-    name: review-in-korea-app

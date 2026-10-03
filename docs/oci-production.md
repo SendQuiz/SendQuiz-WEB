@@ -12,7 +12,7 @@
 
 운영 서버는 `trendswhat-prod-1` (`168.107.48.58`)입니다. 공용 `/opt/edge` Caddy가 `sendquiz.net`, `www.sendquiz.net`을 `send-web:3000`으로 전달합니다. 배포는 공용 Caddy나 다른 서비스 설정을 변경하지 않습니다.
 
-DB는 `review-in-korea-mysql:3306`의 `sendquiz`이며 전용 계정 `sendquiz_app`을 사용합니다. 웹은 외부 `edge`, `review-in-korea-app` Docker 네트워크에 연결됩니다. 기존 MySQL 컨테이너와 데이터 볼륨을 공유하지만 Review in Korea의 DB와 계정은 변경하지 않습니다.
+DB는 `oci-mysql:3306`의 `sendquiz`이며 전용 계정 `sendquiz_app`을 사용합니다. 웹은 외부 `edge`, `database` Docker 네트워크에 연결됩니다. 기존 MySQL 컨테이너와 데이터 볼륨을 공유하지만 Review in Korea의 DB와 계정은 변경하지 않습니다.
 
 `.env.production`의 각 키는 같은 이름의 저장소 Actions Secret으로 등록합니다. SSH 키와 호스트 키는 `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` Secrets에 저장합니다. `DEPLOY_HOST`, `DEPLOY_USER`는 Actions Variables입니다. 배포에서 생성한 환경파일은 접근 권한 `600`을 사용하며, 소스·빌드 컨텍스트·이미지에 포함하지 않습니다. GHCR 인증은 실행 중에만 임시 Docker 설정 디렉터리를 사용합니다.
 

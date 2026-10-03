@@ -35,4 +35,4 @@
 - deprecated 라이브러리를 사용하지 마세요.
 - 개발 서버 실행/재시작은 사용자가 직접 수행합니다. 에이전트는 사용자 요청 없이 `npm run dev` 같은 장기 실행 dev 서버 명령을 실행하지 마세요.
 - 운영 배포는 `SendQuiz/SendQuiz-WEB`의 `main` push로 GitHub Actions가 ARM64 이미지를 GHCR에 올리고 `trendswhat-prod-1:/opt/sendquiz`의 SEND 웹 컨테이너만 갱신합니다. `/opt/edge`의 공용 Caddy와 다른 서비스 설정을 수정하지 마세요.
-- 운영 DB는 기존 Docker MySQL `review-in-korea-mysql:3306`의 `sendquiz` 데이터베이스이며, 전용 계정 `sendquiz_app`을 사용합니다. 웹은 `edge`, `review-in-korea-app` 네트워크에 연결됩니다.
+- 운영 DB는 기존 Docker MySQL `oci-mysql:3306`의 `sendquiz` 데이터베이스이며, 전용 계정 `sendquiz_app`을 사용합니다. 웹은 `edge`, `database` 네트워크에 연결됩니다.
