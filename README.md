@@ -18,11 +18,16 @@ npm run dev
 
 ## 디렉토리 구조
 
-- `src/app`: Server Component 페이지, 루트 레이아웃, Metadata, 파일 기반 API Route Handler
-- `src/app/auth/auth-panel.tsx`, `src/app/support/support-form.tsx`, `src/app/app-download-link.tsx`: 브라우저 상호작용이 필요한 Client Component
-- `src/controllers`: 표준 `Response`를 반환하는 API 처리 및 입력 검증
-- `src/services`, `src/models`: 서비스 로직과 데이터 접근
-- `src/utils/routeHandler.ts`: JSON·OAuth 폼 파싱, 인증 및 오류 응답 처리
+- `app/`: 페이지, 레이아웃, 스타일, 파일 기반 API Route Handler
+- `components/<domain>/`: 인증·고객 지원·홈 화면 UI
+- `lib/<domain>/`: 인증·프로필·사용자·퀴즈·피드백·정책 로직
+- `lib/http/`: 요청 검증, 인증 가드, 응답 및 오류 처리
+- `lib/db/`: MySQL 연결 및 SQL 파일 로더
+- `database/`: 마이그레이션과 SQL 쿼리
+- `content/`, `public/`: 정책 원문과 정적 파일
+
+소스 파일명은 kebab-case를 사용하고, 내부 모듈은 `@/`로 가져옵니다.
+테스트는 대상 코드 옆에 `*-test.ts`로 배치합니다.
 
 API는 `/api/auth/...`, `/api/profile/...`, `/api/quiz/...`, `/api/feedback`을 사용합니다.
 이전 `/auth/...`, `/profile/...`, `/quiz/...`, `/feedback` API 별칭과 Pages Router는 제거했습니다.
