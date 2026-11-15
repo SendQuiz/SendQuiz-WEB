@@ -10,6 +10,7 @@ export default function HomePage() {
     <>
       <Head>
         <title>SEND</title>
+        <link rel="canonical" href="https://sendquiz.imgobot.com/" />
         <meta
           name="description"
           content="SEND is a simple quiz and authentication service."

@@ -38,7 +38,7 @@ form.addEventListener("submit", async (event) => {
 
     messageInput.value = "";
     setStatus("문의가 접수되었습니다. 감사합니다.", "success");
-  } catch (error) {
+  } catch {
     setStatus("네트워크 오류가 발생했습니다.", "error");
   } finally {
     submitButton.disabled = false;

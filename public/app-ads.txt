@@ -1,4 +1,4 @@
-OWNERDOMAIN=sendquiz.net
+OWNERDOMAIN=sendquiz.imgobot.com
 
 
 # [GOOGLE ADMOB]

@@ -13,9 +13,7 @@ import { serializeAuthSession } from "../utils/authSession";
 import { createOAuthCallbackHtml } from "../utils/oauthCallbackHtml";
 import { API_MESSAGES } from "../utils/messages";
 import { readBodyString, readQueryString } from "../utils/request";
-import type { ApiNext, ApiRequest, ApiResponse } from "../types/api";
-
-type OAuthProvider = "apple" | "google";
+import type { ApiRequest, ApiResponse } from "../types/api";
 
 function readCallbackPayload(req: ApiRequest) {
   if (req.method === "POST") {
@@ -46,7 +44,7 @@ async function startWebOAuth(req: ApiRequest, res: ApiResponse) {
   return res.redirect(302, authorizationUrl);
 }
 
-async function completeWebOAuth(req: ApiRequest, res: ApiResponse, next: ApiNext) {
+async function completeWebOAuth(req: ApiRequest, res: ApiResponse) {
   try {
     const provider = normalizeProvider(readQueryString(req, "provider"));
     if (!provider) return res.status(400).json(API_MESSAGES.UNSUPPORTED_OAUTH_PROVIDER);
@@ -75,7 +73,7 @@ async function completeWebOAuth(req: ApiRequest, res: ApiResponse, next: ApiNext
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     return res.status(200).send(createOAuthCallbackHtml(serializeAuthSession(user), authRequest.REDIRECT_PATH));
-  } catch (error) {
+  } catch {
     if (res.writableEnded) return;
     return res.redirect(302, "/auth?mode=login&oauth=failed");
   }
