@@ -1,3 +1,4 @@
+import { redirect } from "../utils/routeHandler";
 import {
   normalizeProvider,
 } from "../utils/oauth";
@@ -13,9 +14,9 @@ import { serializeAuthSession } from "../utils/authSession";
 import { createOAuthCallbackHtml } from "../utils/oauthCallbackHtml";
 import { API_MESSAGES } from "../utils/messages";
 import { readBodyString, readQueryString } from "../utils/request";
-import type { ApiRequest, ApiResponse } from "../types/api";
+import type { RequestContext } from "../types/api";
 
-function readCallbackPayload(req: ApiRequest) {
+function readCallbackPayload(req: RequestContext) {
   if (req.method === "POST") {
     return {
       code: readBodyString(req, "code", { trim: false }),
@@ -31,9 +32,9 @@ function readCallbackPayload(req: ApiRequest) {
   };
 }
 
-async function startWebOAuth(req: ApiRequest, res: ApiResponse) {
-  const provider = normalizeProvider(readQueryString(req, "provider"));
-  if (!provider) return res.status(400).json(API_MESSAGES.UNSUPPORTED_OAUTH_PROVIDER);
+async function startWebOAuth(req: RequestContext) {
+  const provider = normalizeProvider(req.params.provider);
+  if (!provider) return Response.json(API_MESSAGES.UNSUPPORTED_OAUTH_PROVIDER, { status: 400 });
 
   const authorizationUrl = await startWebOAuthRequest({
     mobileReturnUri: readQueryString(req, "mobile_return_uri"),
@@ -41,19 +42,19 @@ async function startWebOAuth(req: ApiRequest, res: ApiResponse) {
     redirectPath: readQueryString(req, "redirect"),
   });
 
-  return res.redirect(302, authorizationUrl);
+  return redirect(authorizationUrl);
 }
 
-async function completeWebOAuth(req: ApiRequest, res: ApiResponse) {
+async function completeWebOAuth(req: RequestContext) {
   try {
-    const provider = normalizeProvider(readQueryString(req, "provider"));
-    if (!provider) return res.status(400).json(API_MESSAGES.UNSUPPORTED_OAUTH_PROVIDER);
+    const provider = normalizeProvider(req.params.provider);
+    if (!provider) return Response.json(API_MESSAGES.UNSUPPORTED_OAUTH_PROVIDER, { status: 400 });
 
     const payload = readCallbackPayload(req);
-    if (payload.error || !payload.code || !payload.state) return res.redirect(302, "/auth?mode=login&oauth=failed");
+    if (payload.error || !payload.code || !payload.state) return redirect("/auth?mode=login&oauth=failed");
 
     const authRequest = await consumeWebOAuthRequest(provider, payload.state);
-    if (!authRequest) return res.redirect(302, "/auth?mode=login&oauth=failed");
+    if (!authRequest) return redirect("/auth?mode=login&oauth=failed");
 
     const user = await resolveOAuthUser({
       code: payload.code,
@@ -68,25 +69,22 @@ async function completeWebOAuth(req: ApiRequest, res: ApiResponse) {
         returnUri: authRequest.MOBILE_RETURN_URI,
         userId: user.ID,
       });
-      return res.redirect(302, returnUrl);
+      return redirect(returnUrl);
     }
 
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    return res.status(200).send(createOAuthCallbackHtml(serializeAuthSession(user), authRequest.REDIRECT_PATH));
+    return new Response(createOAuthCallbackHtml(serializeAuthSession(user), authRequest.REDIRECT_PATH), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   } catch {
-    if (res.writableEnded) return;
-    return res.redirect(302, "/auth?mode=login&oauth=failed");
+    return redirect("/auth?mode=login&oauth=failed");
   }
 }
 
-async function exchangeMobileOAuth(req: ApiRequest, res: ApiResponse) {
-  const code = requireBodyString(req, res, "code", API_MESSAGES.OAUTH_CODE_REQUIRED);
-  if (!code) return;
+async function exchangeMobileOAuth(req: RequestContext) {
+  const code = requireBodyString(req, "code", API_MESSAGES.OAUTH_CODE_REQUIRED);
 
   const user = await exchangeMobileOAuthCode(code);
-  if (!user) return res.status(401).json(API_MESSAGES.INVALID_OAUTH_CODE);
+  if (!user) return Response.json(API_MESSAGES.INVALID_OAUTH_CODE, { status: 401 });
 
-  return res.json({ ...API_MESSAGES.OK, ...serializeAuthSession(user) });
+  return Response.json({ ...API_MESSAGES.OK, ...serializeAuthSession(user) });
 }
 
 export { completeWebOAuth, exchangeMobileOAuth, startWebOAuth };

@@ -1,5 +1,5 @@
 import { getUserById } from "../models/userModel";
-import type { ApiRequest, ApiResponse } from "../types/api";
+import type { RequestContext } from "../types/api";
 import { API_MESSAGES } from "../utils/messages";
 import { readBodyString, readEmail } from "../utils/request";
 import { hasMinimumPasswordLength } from "../utils/secrets";
@@ -9,37 +9,32 @@ function parsePositiveId(value: unknown) {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-function requireAuthenticatedUserId(req: ApiRequest, res: ApiResponse) {
+function requireAuthenticatedUserId(req: RequestContext) {
   const userId = parsePositiveId(req.user?.userId);
   if (userId) return userId;
 
-  res.status(401).json(API_MESSAGES.UNAUTHORIZED);
-  return null;
+  throw Response.json(API_MESSAGES.UNAUTHORIZED, { status: 401 });
 }
 
-async function requireCurrentUser(req: ApiRequest, res: ApiResponse) {
-  const userId = requireAuthenticatedUserId(req, res);
-  if (!userId) return null;
+async function requireCurrentUser(req: RequestContext) {
+  const userId = requireAuthenticatedUserId(req);
 
   const user = await getUserById(userId);
   if (user?.ID) return user;
 
-  res.status(401).json(API_MESSAGES.USER_NOT_FOUND);
-  return null;
+  throw Response.json(API_MESSAGES.USER_NOT_FOUND, { status: 401 });
 }
 
-function requireRouteId(req: ApiRequest, res: ApiResponse, key: string, notFoundMessage: unknown) {
+function requireRouteId(req: RequestContext, key: string, notFoundMessage: unknown) {
   const value = req.params?.[key];
   const id = parsePositiveId(value);
   if (id) return id;
 
-  res.status(404).json(notFoundMessage);
-  return null;
+  throw Response.json(notFoundMessage, { status: 404 });
 }
 
 function requireBodyString(
-  req: ApiRequest,
-  res: ApiResponse,
+  req: RequestContext,
   key: string,
   badRequestMessage: unknown,
   options?: { trim?: boolean }
@@ -47,25 +42,21 @@ function requireBodyString(
   const value = readBodyString(req, key, options);
   if (value) return value;
 
-  res.status(400).json(badRequestMessage);
-  return null;
+  throw Response.json(badRequestMessage, { status: 400 });
 }
 
-function requireBodyEmail(req: ApiRequest, res: ApiResponse, key: string, badRequestMessage: unknown) {
+function requireBodyEmail(req: RequestContext, key: string, badRequestMessage: unknown) {
   const value = readEmail(req, "body", key);
   if (value) return value;
 
-  res.status(400).json(badRequestMessage);
-  return null;
+  throw Response.json(badRequestMessage, { status: 400 });
 }
 
-function requireBodyPassword(req: ApiRequest, res: ApiResponse, key: string, badRequestMessage: unknown) {
-  const password = requireBodyString(req, res, key, badRequestMessage, { trim: false });
-  if (!password) return null;
+function requireBodyPassword(req: RequestContext, key: string, badRequestMessage: unknown) {
+  const password = requireBodyString(req, key, badRequestMessage, { trim: false });
   if (hasMinimumPasswordLength(password)) return password;
 
-  res.status(400).json(API_MESSAGES.PASSWORD_TOO_SHORT);
-  return null;
+  throw Response.json(API_MESSAGES.PASSWORD_TOO_SHORT, { status: 400 });
 }
 
 export {

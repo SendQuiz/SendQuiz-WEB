@@ -256,6 +256,6 @@ export function getPolicyDocumentBySlug(slug: string) {
   return kind ? documents[kind] : null;
 }
 
-export function getPolicyStaticPaths() {
-  return Object.keys(policyKindBySlug).map((slug) => ({ params: { slug } }));
+export function getPolicyStaticParams() {
+  return Object.keys(policyKindBySlug).map((slug) => ({ slug }));
 }

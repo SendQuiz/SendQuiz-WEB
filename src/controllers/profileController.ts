@@ -5,55 +5,48 @@ import {
   withdrawProfile,
 } from "../services/profileService";
 import { API_MESSAGES } from "../utils/messages";
-import type { ApiRequest, ApiResponse } from "../types/api";
+import type { RequestContext } from "../types/api";
 
-async function getMe(req: ApiRequest, res: ApiResponse) {
-  const user = await requireCurrentUser(req, res);
-  if (!user) return;
+async function getMe(req: RequestContext) {
+  const user = await requireCurrentUser(req);
 
-  return res.json({ ...API_MESSAGES.OK, user });
+  return Response.json({ ...API_MESSAGES.OK, user });
 }
 
-async function updateNickname(req: ApiRequest, res: ApiResponse) {
-  const user = await requireCurrentUser(req, res);
-  if (!user) return;
+async function updateNickname(req: RequestContext) {
+  const user = await requireCurrentUser(req);
 
-  const nickname = requireBodyString(req, res, "nickname", API_MESSAGES.NICKNAME_REQUIRED);
-  if (!nickname) return;
+  const nickname = requireBodyString(req, "nickname", API_MESSAGES.NICKNAME_REQUIRED);
 
   const updated = await updateProfileNickname(user.ID, nickname);
-  return res.json({ ...API_MESSAGES.OK, user: updated });
+  return Response.json({ ...API_MESSAGES.OK, user: updated });
 }
 
-async function changePassword(req: ApiRequest, res: ApiResponse) {
-  const user = await requireCurrentUser(req, res);
-  if (!user) return;
+async function changePassword(req: RequestContext) {
+  const user = await requireCurrentUser(req);
 
-  const currentPassword = requireBodyString(req, res, "currentPassword", API_MESSAGES.CURRENT_PASSWORD_REQUIRED, {
+  const currentPassword = requireBodyString(req, "currentPassword", API_MESSAGES.CURRENT_PASSWORD_REQUIRED, {
     trim: false,
   });
-  if (!currentPassword) return;
 
-  const newPassword = requireBodyPassword(req, res, "newPassword", API_MESSAGES.NEW_PASSWORD_REQUIRED);
-  if (!newPassword) return;
+  const newPassword = requireBodyPassword(req, "newPassword", API_MESSAGES.NEW_PASSWORD_REQUIRED);
 
   const result = await changeProfilePassword({ userId: user.ID, currentPassword, newPassword });
-  if (result === "not_found") return res.status(401).json(API_MESSAGES.USER_NOT_FOUND);
-  if (result === "invalid_current_password") return res.status(401).json(API_MESSAGES.INVALID_CREDENTIALS);
+  if (result === "not_found") return Response.json(API_MESSAGES.USER_NOT_FOUND, { status: 401 });
+  if (result === "invalid_current_password") return Response.json(API_MESSAGES.INVALID_CREDENTIALS, { status: 401 });
   if (result === "password_login_not_available") {
-    return res.status(409).json(API_MESSAGES.PASSWORD_LOGIN_NOT_AVAILABLE);
+    return Response.json(API_MESSAGES.PASSWORD_LOGIN_NOT_AVAILABLE, { status: 409 });
   }
 
-  return res.json({ ...API_MESSAGES.OK });
+  return Response.json({ ...API_MESSAGES.OK });
 }
 
-async function withdraw(req: ApiRequest, res: ApiResponse) {
-  const user = await requireCurrentUser(req, res);
-  if (!user) return;
+async function withdraw(req: RequestContext) {
+  const user = await requireCurrentUser(req);
 
   await withdrawProfile(user.ID);
 
-  return res.json({ ...API_MESSAGES.OK });
+  return Response.json({ ...API_MESSAGES.OK });
 }
 
 export { changePassword, getMe, updateNickname, withdraw };

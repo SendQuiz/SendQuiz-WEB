@@ -1,4 +1,4 @@
-import type { ApiRequest } from "../types/api";
+import type { RequestContext } from "../types/api";
 
 type RateLimitOptions = {
   key: string;
@@ -26,14 +26,11 @@ function isRateLimited({ key, limit, windowMs }: RateLimitOptions) {
   return current.count > limit;
 }
 
-function readClientIp(req: ApiRequest) {
-  const forwardedFor = req.headers["x-forwarded-for"];
-  if (typeof forwardedFor === "string" && forwardedFor) return forwardedFor.split(",")[0]?.trim() || "unknown";
-  if (Array.isArray(forwardedFor) && forwardedFor[0]) return forwardedFor[0].split(",")[0]?.trim() || "unknown";
-  return req.socket.remoteAddress || "unknown";
+function readClientIp(req: RequestContext) {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 
-function rateLimitKey(req: ApiRequest, scope: string, identifier = "") {
+function rateLimitKey(req: RequestContext, scope: string, identifier = "") {
   const normalizedIdentifier = identifier.trim().toLowerCase();
   return [scope, readClientIp(req), normalizedIdentifier].join(":");
 }

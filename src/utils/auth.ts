@@ -1,10 +1,9 @@
 import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
 import type { RowDataPacket } from "mysql2";
 
-import { createHttpError, getHttpStatus } from "./httpError";
+import { createHttpError } from "./httpError";
 import { API_MESSAGES } from "./messages";
 import { queryFirst } from "./db";
-import type { ApiNext, ApiRequest, ApiResponse } from "../types/api";
 
 const DEFAULT_TOKEN_EXPIRES_IN = "30d";
 
@@ -54,29 +53,25 @@ function verifyAuthToken(token: string) {
   return jwt.verify(token, getJwtSecret()) as JwtPayload;
 }
 
-function getBearerToken(req: ApiRequest) {
-  const header = req.headers.authorization || "";
-  return header.startsWith("Bearer ") ? header.slice(7) : null;
-}
+async function authenticate(headers: Headers) {
+  const token = headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
+  if (!token) throw Response.json(API_MESSAGES.UNAUTHORIZED, { status: 401 });
 
-async function authenticate(req: ApiRequest, res: ApiResponse, next: ApiNext) {
   try {
-    const token = getBearerToken(req);
-    if (!token) return res.status(401).json(API_MESSAGES.UNAUTHORIZED);
-
     const payload = verifyAuthToken(token);
     const userId = parsePositiveUserId(payload?.userId);
-    if (!userId) return res.status(401).json(API_MESSAGES.UNAUTHORIZED);
-
+    if (!userId) throw Response.json(API_MESSAGES.UNAUTHORIZED, { status: 401 });
     const tokenVersion = await readCurrentTokenVersion(userId);
-    if (tokenVersion == null) return res.status(401).json(API_MESSAGES.UNAUTHORIZED);
-    if (Number(payload.tokenVersion ?? 0) !== tokenVersion) return res.status(401).json(API_MESSAGES.UNAUTHORIZED);
-
-    req.user = payload;
-    return next();
+    if (tokenVersion == null || Number(payload.tokenVersion ?? 0) !== tokenVersion) {
+      throw Response.json(API_MESSAGES.UNAUTHORIZED, { status: 401 });
+    }
+    return payload;
   } catch (error) {
-    if (getHttpStatus(error) === 500) return res.status(500).json(API_MESSAGES.INTERNAL_SERVER_ERROR);
-    return res.status(401).json(API_MESSAGES.UNAUTHORIZED);
+    if (error instanceof Response) throw error;
+    if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+      throw Response.json(API_MESSAGES.UNAUTHORIZED, { status: 401 });
+    }
+    throw error;
   }
 }
 

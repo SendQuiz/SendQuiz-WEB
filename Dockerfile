@@ -17,7 +17,6 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder --chown=node:node /app/content ./content
 COPY --from=builder --chown=node:node /app/database ./database
-COPY --from=builder --chown=node:node /app/pages/support/source.html ./pages/support/source.html
 COPY --from=builder --chown=node:node /app/scripts/migrate-db.ts ./scripts/migrate-db.ts
 USER node
 EXPOSE 3000

@@ -1,0 +1,4 @@
+import { confirmEmail } from '@/controllers/authController';
+import { routeHandler } from '@/utils/routeHandler';
+
+export const POST = routeHandler(confirmEmail);

@@ -94,14 +94,15 @@ function formFieldsMatch(formData: FormData, leftKey: string, rightKey: string) 
 
 function saveSession(session: AuthSession) {
   window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  window.dispatchEvent(new Event(SESSION_KEY));
 }
 
 function clearSession() {
   window.localStorage.removeItem(SESSION_KEY);
+  window.dispatchEvent(new Event(SESSION_KEY));
 }
 
-function readSession(): AuthSession | null {
-  const raw = window.localStorage.getItem(SESSION_KEY);
+function readSession(raw: string | null): AuthSession | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw);
@@ -131,3 +132,20 @@ export {
   readSession,
   saveSession,
 };
+
+export function subscribeSession(onChange: () => void) {
+  window.addEventListener('storage', onChange);
+  window.addEventListener(SESSION_KEY, onChange);
+  return () => {
+    window.removeEventListener('storage', onChange);
+    window.removeEventListener(SESSION_KEY, onChange);
+  };
+}
+
+export function getSessionSnapshot() {
+  return window.localStorage.getItem(SESSION_KEY);
+}
+
+export function getServerSessionSnapshot() {
+  return null;
+}
