@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "react"
+  ],
+  "ignorePatterns": [
+    ".next/**"
+  ],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "pages/auth/index.tsx"
+      ],
+      "rules": {
+        "react/set-state-in-effect": "off"
+      }
+    }
+  ]
+}

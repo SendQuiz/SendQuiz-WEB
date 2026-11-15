@@ -1,6 +1,6 @@
 import Head from 'next/head';
 
-const ACCOUNT_DELETION_URL = 'https://sendquiz.net/account-deletion/';
+const ACCOUNT_DELETION_URL = 'https://sendquiz.imgobot.com/account-deletion/';
 
 export default function AccountDeletionPage() {
   return (

@@ -53,6 +53,7 @@ export default function PolicyPage({ document }: PolicyPageProps) {
       <Head>
         <title>{document.title} | SEND</title>
         <meta name="description" content={document.description} />
+        <link rel="canonical" href={document.meta.find((item) => item.label === 'Public URL')?.value} />
       </Head>
       <main className="min-h-svh bg-[#f7f8fa] text-[#191f28]">
         <section className="border-b border-[#e5e8eb] bg-white px-5 pt-28 sm:px-8 lg:px-12">
@@ -78,7 +79,7 @@ export default function PolicyPage({ document }: PolicyPageProps) {
                 View {labels.switchLabel}
               </a>
               <div className="grid gap-2 text-[13px] font-semibold text-[#6b7684]">
-                <MetaLine icon={<GlobeIcon />} label="Website" value="sendquiz.net" />
+                <MetaLine icon={<GlobeIcon />} label="Website" value="sendquiz.imgobot.com" />
                 <MetaLine icon={<MailIcon />} label="Contact" value="support@sendquiz.net" />
               </div>
             </div>

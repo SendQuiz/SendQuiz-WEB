@@ -1,5 +1,5 @@
 import mysql from "mysql2/promise";
-import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import type { ExecuteValues, Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 function resolveSsl() {
   const value = String(process.env.DB_SSL || "").trim().toLowerCase();
@@ -28,23 +28,23 @@ pool.on("connection", (connection) => {
 type QueryExecutor = Pool | PoolConnection;
 
 type QueryClient = {
-  queryFirst<T extends RowDataPacket = RowDataPacket>(sql: string, values?: unknown[]): Promise<T | null>;
-  queryResult(sql: string, values?: unknown[]): Promise<ResultSetHeader>;
-  queryRows<T extends RowDataPacket = RowDataPacket>(sql: string, values?: unknown[]): Promise<T[]>;
+  queryFirst<T extends RowDataPacket = RowDataPacket>(sql: string, values?: ExecuteValues[]): Promise<T | null>;
+  queryResult(sql: string, values?: ExecuteValues[]): Promise<ResultSetHeader>;
+  queryRows<T extends RowDataPacket = RowDataPacket>(sql: string, values?: ExecuteValues[]): Promise<T[]>;
 };
 
 function createQueryClient(executor: QueryExecutor): QueryClient {
-  async function queryRows<T extends RowDataPacket = RowDataPacket>(sql: string, values: unknown[] = []): Promise<T[]> {
+  async function queryRows<T extends RowDataPacket = RowDataPacket>(sql: string, values: ExecuteValues[] = []): Promise<T[]> {
     const [rows] = await executor.execute<T[]>(sql, values);
     return rows;
   }
 
-  async function queryFirst<T extends RowDataPacket = RowDataPacket>(sql: string, values: unknown[] = []): Promise<T | null> {
+  async function queryFirst<T extends RowDataPacket = RowDataPacket>(sql: string, values: ExecuteValues[] = []): Promise<T | null> {
     const rows = await queryRows<T>(sql, values);
     return rows[0] ?? null;
   }
 
-  async function queryResult(sql: string, values: unknown[] = []): Promise<ResultSetHeader> {
+  async function queryResult(sql: string, values: ExecuteValues[] = []): Promise<ResultSetHeader> {
     const [result] = await executor.execute<ResultSetHeader>(sql, values);
     return result;
   }

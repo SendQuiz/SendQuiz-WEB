@@ -57,11 +57,11 @@ function hashToken(value: string) {
 }
 
 function getBaseUrl() {
-  return (process.env.AUTH_BASE_URL || process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL || "https://sendquiz.net").replace(/\/+$/, "");
+  return (process.env.AUTH_BASE_URL || process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL || "https://sendquiz.imgobot.com").replace(/\/+$/, "");
 }
 
 function isDevOAuthBaseUrl() {
-  return new URL(getBaseUrl()).hostname === "dev.sendquiz.net";
+  return ["localhost", "127.0.0.1", "[::1]"].includes(new URL(getBaseUrl()).hostname);
 }
 
 function readOAuthEnv(name: string) {
