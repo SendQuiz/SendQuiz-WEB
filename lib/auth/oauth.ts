@@ -87,6 +87,7 @@ function safeRedirectPath(value: unknown) {
 
 function safeMobileReturnUri(value: unknown) {
   const uri = String(value || "").trim();
+  if (uri === "send-dev://auth/oauth" && isDevOAuthBaseUrl()) return uri;
   return uri === "send://auth/oauth" ? uri : "";
 }
 
